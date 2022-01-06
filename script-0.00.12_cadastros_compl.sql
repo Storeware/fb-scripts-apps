@@ -1,0 +1,1 @@
+grant delete,update,insert,select on ctprod_unidade to publicweb;
