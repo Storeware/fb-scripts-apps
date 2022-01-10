@@ -6,6 +6,9 @@ grant select on wba_sigcad to publicweb;
 grant select,update,insert,delete on sigcad to publicweb;
 
 
+update or insert into eventos_estados (codigo,nome) values (0,'Novo') matching (codigo);
+update or insert into EVENTOS_GRUPO (codigo,nome) values( 0,'Novo') matching(codigo);
+
 SET TERM ^ ;
 
 CREATE or alter TRIGGER tr_sigcauth_reg_evento FOR SIGCAUTH

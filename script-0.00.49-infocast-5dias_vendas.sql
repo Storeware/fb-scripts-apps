@@ -21,7 +21,7 @@ returns
   (conta int, texto varchar(4096))
 as 
 declare variable valor double precision;
-declare variable data date;
+declare variable data timestamp;
 declare variable total double precision;
 declare variable servicos double precision;
 declare variable pa double precision;
@@ -37,7 +37,7 @@ begin
  texto = '';
  tservicos = 0;
  tpa = 0;
- data = cast('today' as date);
+ data = cast('today' as timestamp);
  id = cast(extract(year from data)||lpad(extract(month from data),2,'0')||lpad(extract(day from data),2,'0') as integer);
  for select data 
             , sum(case when operacao<'200' then valor else -valor end)  valor

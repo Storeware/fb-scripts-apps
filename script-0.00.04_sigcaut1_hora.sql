@@ -116,3 +116,4 @@ grant execute on procedure ENCODEDECODETIME TO publicweb;
 
 select '04 - Completado' from dummy;
 
+commit;

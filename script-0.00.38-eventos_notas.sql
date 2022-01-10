@@ -1,0 +1,1 @@
+grant select,delete,update,insert on EVENTOS_ITEM_NOTAS to publicweb;

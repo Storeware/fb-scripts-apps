@@ -256,3 +256,5 @@ begin
 end^
 SET TERM ; ^
 grant execute on procedure WEB_REG_PEDIDO_ITEM to publicweb;
+
+commit;

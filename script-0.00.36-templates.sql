@@ -1,0 +1,1 @@
+grant select,update,delete,insert on TEMPLATES to publicweb;

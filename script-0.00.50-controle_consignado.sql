@@ -1,12 +1,4 @@
-/*create table ctprodsd_consignado
-  (codigo varchar(18) not null,
-   clifor double precision not null,
-   qtde double precision,
-   primary key( codigo,clifor )
-  ) 
-;
-alter table ctprodsd_consignado add dtatualiz date;
-*/
+
 
 grant select on ctprodsd_consignado to publicweb; 
 

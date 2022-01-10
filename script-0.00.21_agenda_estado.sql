@@ -1,0 +1,1 @@
+grant select, insert, update, delete on AGENDA_ESTADO to publicweb;

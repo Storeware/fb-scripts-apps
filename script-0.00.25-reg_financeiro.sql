@@ -1,0 +1,329 @@
+SET TERM ^ ;
+
+------------------------------------------------------
+CREATE OR ALTER PROCEDURE REG_SIGCX
+(CTRLDCTO DOUBLE PRECISION,BANCO VARCHAR(10), DATA timestamp, FILIAL DOUBLE PRECISION, 
+ CODIGO VARCHAR(10), DCTO VARCHAR(15),VENDEDOR VARCHAR(10),VCTO timestamp,
+ VALOR DOUBLE PRECISION,CLIFOR DOUBLE PRECISION,HISTORICO VARCHAR(50),PRTSERIE VARCHAR(10), ORDEM INT, DCTOOK VARCHAR(1) )
+RETURNS (CTRL DOUBLE PRECISION)
+AS
+BEGIN
+  INSERT INTO SIGCX (
+     BANCO,CLIFOR,CODIGO,CONTROL,DATA,DATA_,
+     DCTO,DESCTOTAL,DIASBLOQ,EMITENTE,FILIAL,HISTORICO,
+     HIST_, PRTSERIE,REGISTRADO,VALOR,VALOR_,VCTO,
+     VENDEDOR,DCTOOK,COMPENSADO,ORDEM,DTCONTABIL  )
+    VALUES(
+     :BANCO,:CLIFOR,:CODIGO,:CTRLDCTO,:DATA,:DATA,
+     :DCTO,0,0,'',:FILIAL,:HISTORICO,
+     SUBSTRING(:HISTORICO FROM 1 FOR 34), :PRTSERIE,'N',:VALOR,:VALOR,:VCTO,
+     :VENDEDOR,:DCTOOK,'N',:ORDEM, :DATA);
+  CTRL = CTRLDCTO;
+  SUSPEND;
+
+END^
+
+------------------------------------------------------
+
+CREATE OR ALTER PROCEDURE PROC_REG_FINANCEIRO111
+( ID DOUBLE PRECISION, CONTROL DOUBLE PRECISION )
+RETURNS (CONTA INT)
+AS
+DECLARE VARIABLE DATA timestamp;
+DECLARE VARIABLE DCTO VARCHAR(10);
+DECLARE VARIABLE FILIAL DOUBLE PRECISION;
+DECLARE VARIABLE CODIGO VARCHAR(10);
+DECLARE VARIABLE VALOR DOUBLE PRECISION;
+DECLARE VARIABLE CLIFOR DOUBLE PRECISION;
+DECLARE VARIABLE RESULT DOUBLE PRECISION;
+DECLARE VARIABLE IDREFER DOUBLE PRECISION;
+DECLARE VARIABLE PRTSERIE VARCHAR(10);
+DECLARE VARIABLE VCTO timestamp;
+DECLARE VARIABLE BANCO VARCHAR(10);
+DECLARE VARIABLE VENDEDOR VARCHAR(10);
+DECLARE VARIABLE HISTORICO VARCHAR(50);
+DECLARE VARIABLE ORDEM INT;
+begin
+   CONTA = 0;
+   -- processa venda em dinheiro
+   -- TODO: o registro de dinheiro poderia ser sintetico
+   FOR SELECT CAIXA,DATA, FILIAL,CODIGO,VALOR,CLIENTE,IDREFER,PRTSERIE,VCTO, ORDEM
+   FROM SIG02CP WHERE ID =:ID
+   INTO :BANCO,:DATA,:FILIAL,:CODIGO,:VALOR,:CLIFOR,:IDREFER,:PRTSERIE,:VCTO,:ORDEM
+   DO
+   begin
+     SELECT FIRST 1 DCTO, HISTORICO,VENDEDOR FROM SIG02 WHERE IDREFER=:IDREFER AND DATA =:DATA AND FILIAL=:FILIAL
+     INTO :DCTO,:HISTORICO,:VENDEDOR;
+     
+     SELECT CTRL FROM 
+      REG_SIGCX(:CONTROL ,:BANCO , :DATA , :FILIAL , 
+        :CODIGO , :DCTO ,:VENDEDOR ,:VCTO ,
+        :VALOR ,:CLIFOR ,:HISTORICO ,:PRTSERIE , :ORDEM, 'S' )
+     INTO :RESULT;
+     IF (RESULT IS NOT NULL) THEN
+        CONTA = row_count;
+     
+   end
+   
+   suspend;
+
+end^
+
+------------------------------------------------------
+
+CREATE OR ALTER PROCEDURE PROC_REG_FINANCEIRO112
+( ID DOUBLE PRECISION, CONTROL DOUBLE PRECISION)
+RETURNS (CONTA INT)
+AS
+DECLARE VARIABLE CTRL DOUBLE PRECISION;
+DECLARE VARIABLE FILIAL DOUBLE PRECISION; 
+DECLARE VARIABLE EMISSAO timestamp ; 
+DECLARE VARIABLE VCTO timestamp; 
+DECLARE VARIABLE PRTSERIE VArCHAR(10); 
+DECLARE VARIABLE CLIFOR DOUBLE PRECISION; 
+DECLARE VARIABLE CODIGO VARCHAR(10);
+DECLARE VARIABLE DCTO VARCHAR(10); 
+DECLARE VARIABLE NOTAFISCAL DOUBLE PRECISION; 
+DECLARE VARIABLE NFSEQ DOUBLE PRECISION; 
+DECLARE VARIABLE HISTORICO VARCHAR(50); 
+DECLARE VARIABLE VALOR DOUBLE PRECISION;
+DECLARE VARIABLE VENDEDOR VARCHAR(10); 
+DECLARE VARIABLE ORDEM DOUBLE PRECISION; 
+DECLARE VARIABLE DCTOOK VARCHAR(1); 
+DECLARE VARIABLE BANCO VARCHAR(10);
+DECLARE VARIABLE DATA timestamp;
+DECLARE VARIABLE IDREFER DOUBLE PRECISION; 
+DECLARE VARIABLE DTCONTABIL timestamp;
+begin
+   CONTA = 0;
+   -- processa venda prazo
+
+   FOR SELECT CAIXA,DATA, FILIAL,CODIGO,VALOR,CLIENTE,IDREFER,PRTSERIE,VCTO, ORDEM
+   FROM SIG02CP WHERE ID =:ID
+   INTO :BANCO,:DATA,:FILIAL,:CODIGO,:VALOR,:CLIFOR,:IDREFER,:PRTSERIE,:VCTO,:ORDEM
+   DO
+   begin
+     SELECT FIRST 1 DCTO, HISTORICO,VENDEDOR,NOTAFISCAL, NFSEQ FROM SIG02 WHERE IDREFER=:IDREFER AND DATA =:DATA AND FILIAL=:FILIAL
+     INTO :DCTO,:HISTORICO,:VENDEDOR, :NOTAFISCAL,:NFSEQ ;
+     DTCONTABIL = coalesce(dtcontabil,DATA);
+     emissao = coalesce(emissao,data);
+     DCTOOK = coalesce(dctook,'S');
+     
+     SELECT p.CTRL_ID
+     FROM 
+     REG_SIGFLU_EX(
+       :FILIAL, :EMISSAO, :VCTO, :PRTSERIE, :CLIFOR, :CODIGO, 
+       :DCTO, :NOTAFISCAL, :NFSEQ, :HISTORICO, :VALOR, 
+       :VENDEDOR, :ORDEM, :DCTOOK, :CONTROL, 
+       :IDREFER, :DTCONTABIL
+       )   p 
+       INTO :CTRL;
+    
+    IF (CTRL IS NOT NULL) then
+      CONTA = row_count;  
+   
+   END
+   suspend;
+
+end^
+
+------------------------------------------------------
+
+CREATE OR ALTER PROCEDURE PROC_REG_FINANCEIRO113
+( ID DOUBLE PRECISION, CONTROL DOUBLE PRECISION)
+RETURNS (CONTA INT)
+AS
+begin
+   CONTA = 0;
+   -- processa venda em ??
+   SELECT CONTA FROM PROC_REG_FINANCEIRO112(:ID,:CONTROL)
+   INTO :CONTA;
+   suspend;
+
+end^
+
+------------------------------------------------------
+
+
+CREATE OR ALTER PROCEDURE PROC_REG_FINANCEIRO114
+( ID DOUBLE PRECISION, CONTROL DOUBLE PRECISION)
+RETURNS (CONTA INT)
+AS
+begin
+   CONTA = 0;
+   -- processa venda em cartao pos
+   -- TODO: registro sintetico
+   SELECT CONTA FROM PROC_REG_FINANCEIRO112(:ID,:CONTROL)
+   INTO :CONTA;
+   suspend;
+
+end^
+
+------------------------------------------------------
+
+
+CREATE OR ALTER PROCEDURE PROC_REG_FINANCEIRO115
+( ID DOUBLE PRECISION, CONTROL DOUBLE PRECISION)
+RETURNS (CONTA INT)
+AS
+begin
+   CONTA = 0;
+   -- processa venda em tiket
+   SELECT CONTA FROM PROC_REG_FINANCEIRO112(:ID,:CONTROL)
+   INTO :CONTA;
+   suspend;
+
+end^
+
+------------------------------------------------------
+
+CREATE OR ALTER PROCEDURE PROC_REG_FINANCEIRO116
+( ID DOUBLE PRECISION, CONTROL DOUBLE PRECISION)
+RETURNS (CONTA INT)
+AS
+begin
+   CONTA = 0;
+   -- processa venda em credito
+   -- TODO: registro sintetico
+   SELECT CONTA FROM PROC_REG_FINANCEIRO112(:ID,:CONTROL)
+   INTO :CONTA;
+   suspend;
+
+end^
+
+------------------------------------------------------
+
+CREATE OR ALTER PROCEDURE PROC_REG_FINANCEIRO117
+( ID DOUBLE PRECISION, CONTROL DOUBLE PRECISION)
+RETURNS (CONTA INT)
+AS
+begin
+   CONTA = 0;
+   -- processa venda em debito
+   -- TODO: registro sintetico
+   SELECT CONTA FROM PROC_REG_FINANCEIRO112(:ID,:CONTROL)
+   INTO :CONTA;
+   suspend;
+
+end^
+
+------------------------------------------------------
+
+CREATE OR ALTER PROCEDURE PROC_REG_FINANCEIRO118
+( ID DOUBLE PRECISION, CONTROL DOUBLE PRECISION)
+RETURNS (CONTA INT)
+AS
+begin
+   CONTA = 0;
+   -- processa venda em pgto com credito
+   -- TODO: avaliar a baixa do credito (creio que ja esta lancado);
+   SELECT CONTA FROM PROC_REG_FINANCEIRO112(:ID,:CONTROL)
+   INTO :CONTA;
+   suspend;
+
+end^
+
+------------------------------------------------------
+
+CREATE OR ALTER PROCEDURE PROC_REG_FINANCEIRO11x
+( ID DOUBLE PRECISION, CONTROL DOUBLE PRECISION)
+RETURNS (CONTA INT)
+AS
+begin
+   CONTA = 0;
+   -- processa venda em demais
+   -- TODO: para lancar os registro fora da faixa, que deveria ter chamadas propria mas nao foram prevista nesta fase
+   SELECT CONTA FROM PROC_REG_FINANCEIRO112(:ID,:CONTROL)
+   INTO :CONTA;
+   suspend;
+
+end^
+
+
+------------------------------------------------------
+
+CREATE or alter PROCEDURE proc_reg_financeiro 
+   
+RETURNS 
+ ( conta int )
+AS 
+--DECLARE VARIABLE variable_name < datatype>; 
+DECLARE VARIABLE ID double precision;
+DECLARE VARIABLE operacao varchar(10);
+DECLARE VARIABLE PROCESSADOS INT;
+DECLARE VARIABLE CONTROL DOUBLE PRECISION;
+BEGIN
+  CONTA = 0;
+   
+  
+  in AUTONOMOUS transaction do
+  for select first 500 id,codigo from sig02cp
+  where registrado = 'N'
+  into :id, :operacao
+  do
+  begin
+     IF (:CONTROL IS NULL) THEN 
+        select numero from obter_id('CTRLDCTO') into :CONTROL; 
+     -- registrar um item no financeiro
+     if (operacao like '111%') then
+       select conta from proc_reg_financeiro111( :id, :CONTROL )
+       INTO :PROCESSADOS;
+     else  
+     if (operacao like '112%') then
+       select conta from proc_reg_financeiro112( :id, :CONTROL )
+       INTO :PROCESSADOS;
+     else
+     if (operacao like '113%') then
+       select conta from proc_reg_financeiro113( :id, :CONTROL )
+       INTO :PROCESSADOS;
+     else  
+     if (operacao like '114%') then
+       select conta from proc_reg_financeiro114( :id, :CONTROL )
+       INTO :PROCESSADOS;
+     else  
+     if (operacao like '115%') then
+       select conta from proc_reg_financeiro115( :id, :CONTROL )
+       INTO :PROCESSADOS;
+     else  
+     if (operacao like '116%') then
+       select conta from proc_reg_financeiro116( :id, :CONTROL )
+       INTO :PROCESSADOS;
+     else  
+     if (operacao like '117%') then
+       select conta from proc_reg_financeiro117( :id, :CONTROL )
+       INTO :PROCESSADOS;
+     else  
+     if (operacao like '118%') then
+       select conta from proc_reg_financeiro118( :id, :CONTROL )
+       INTO :PROCESSADOS;
+     else  
+       select conta from proc_reg_financeiro11x( :id, :CONTROL )
+       INTO :PROCESSADOS;
+       
+     PROCESSADOS = COALESCE(:PROCESSADOS,0);  
+     CONTA = CONTA + :PROCESSADOS;  
+     IF (PROCESSADOS>0) THEN
+       UPDATE SIG02CP SET REGISTRADO = 'S', CTRL_REG = :CONTROL  WHERE ID =:ID;
+  end
+  SUSPEND;
+END^
+
+SET TERM ; ^
+
+
+
+GRANT EXECUTE ON PROCEDURE PROC_REG_FINANCEIRO111 TO PROCEDURE proc_reg_financeiro;
+GRANT EXECUTE ON PROCEDURE PROC_REG_FINANCEIRO112 TO PROCEDURE proc_reg_financeiro;
+GRANT EXECUTE ON PROCEDURE PROC_REG_FINANCEIRO113 TO PROCEDURE proc_reg_financeiro;
+GRANT EXECUTE ON PROCEDURE PROC_REG_FINANCEIRO114 TO PROCEDURE proc_reg_financeiro;
+GRANT EXECUTE ON PROCEDURE PROC_REG_FINANCEIRO115 TO PROCEDURE proc_reg_financeiro;
+GRANT EXECUTE ON PROCEDURE PROC_REG_FINANCEIRO116 TO PROCEDURE proc_reg_financeiro;
+GRANT EXECUTE ON PROCEDURE PROC_REG_FINANCEIRO117 TO PROCEDURE proc_reg_financeiro;
+GRANT EXECUTE ON PROCEDURE PROC_REG_FINANCEIRO118 TO PROCEDURE proc_reg_financeiro;
+GRANT EXECUTE ON PROCEDURE PROC_REG_FINANCEIRO11x TO PROCEDURE proc_reg_financeiro;
+
+
+COMMIT WORK;
+
+--SELECT * FROM proc_reg_financeiro;
+

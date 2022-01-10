@@ -52,7 +52,7 @@ grant select on ESTAPP_CONS_CATEGITEMS to sysdba;
 grant select on ESTAPP_CONS_CATEGITEMS to publicweb;
 
  
- 
+commit; 
 
 
 
