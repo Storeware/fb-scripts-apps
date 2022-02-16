@@ -383,9 +383,6 @@ GRANT SELECT
 
 GRANT SELECT
  ON WEB_CLIENTES TO PROCEDURE WEB_PROCURAR_CLIENTECELULAR;
-
-
-
   
 grant select on wba_ctprod_unidade to publicweb;
 grant select on wba_ctprod_unidade to wba;
@@ -395,10 +392,17 @@ grant select on sigcauth to publicweb;
 grant select,update,delete on sigcaut1estados to publicweb;
 grant select,update,delete on sigcaut1armaz to publicweb;
 
-
-
-
-
-
 GRANT INSERT, SELECT, UPDATE
  ON WBA_SIGCAUT1EST TO  publicweb WITH GRANT OPTION;
+
+GRANT SELECT, INSERT, UPDATE ON PAT_CADASTRO TO publicweb;
+GRANT SELECT, INSERT, UPDATE ON PAT_LOCAL TO publicweb;
+GRANT SELECT, INSERT, UPDATE ON PAT_ESTADO TO publicweb;
+GRANT SELECT, INSERT, UPDATE ON PAT_SITUACAO TO publicweb;
+GRANT SELECT, INSERT, UPDATE ON PAT_TIPO_ACAO TO publicweb;
+GRANT SELECT, INSERT, UPDATE ON PAT_TIPO_ACESSO TO publicweb;
+GRANT SELECT, INSERT, UPDATE ON PAT_TIPO_MVTO TO publicweb;
+GRANT SELECT, INSERT, UPDATE ON PAT_ATRIB_GERAL TO publicweb;
+GRANT SELECT, INSERT, UPDATE ON PAT_ATRIB_VEICULO TO publicweb;
+
+
