@@ -3,7 +3,7 @@ Scripts para utilização dos apps desenvolvidos pela WBAGestão: Gestor, Vended
 ### branches
 <pre>
 main -> em desenvolvimento
-beta -> pré analise para transformar em stable
+beta -> pré-análise para transformar em stable
 stable -> último liberado para produção
 </pre>
 
