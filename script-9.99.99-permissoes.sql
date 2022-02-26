@@ -411,3 +411,7 @@ GRANT SELECT ON COMANDAS TO publicweb;
 GRANT SELECT ON PRODUCAO_IMPRIMIR TO publicweb;
 GRANT SELECT ON PRODUCAO_MESA TO publicweb;
 GRANT SELECT ON CTPROD_COMPL TO publicweb;
+
+grant execute on procedure COMANDA_PRECOPRODUTO to publicweb;
+grant select on CTPRODX to procedure COMANDA_PRECOPRODUTO;
+
