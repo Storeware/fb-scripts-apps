@@ -1,12 +1,19 @@
-commit;
 SET TERM ^ ;
+Create or ALTER PROCEDURE COMANDA_PRECOPRODUTO (
+    P_CODIGO varchar(18),
+    P_FILIAL float,
+    P_QTDE numeric(15,4),
+    P_TABELAPRECO integer )
+RETURNS (
+    ACHOU integer,
+    CODIGO varchar(18),
+    UNIDADE varchar(5),
+    NOME varchar(50),
+    EHBALANCA integer,
+    PRECOVENDA numeric(15,4),
+    QTDE numeric(15,4) )
 
-CREATE or alter PROCEDURE COMANDA_PRECOPRODUTO
- ( P_CODIGO VARCHAR(18), P_FILIAL FLOAT, P_QTDE numeric(15,4), P_TABELAPRECO INT ) 
-RETURNS 
- (--texto varchar(255), 
- achou int, codigo varchar(18), unidade varchar(5), nome varchar(50), ehbalanca int, precovenda numeric(15,4), qtde numeric(15,4) )
-AS 
+AS
 DECLARE VARIABLE dummy_precovenda numeric(15,4); 
 DECLARE VARIABLE precoBalanca numeric(15,4);
 DECLARE VARIABLE precoweb numeric(15,4);
@@ -64,7 +71,7 @@ BEGIN
   end
 
   
-  -- pega preco de promo��o
+  -- pega preco de promo??o
   select prompreco from CTPROD_FILIAL_PROMOCAO
   where codigo = :codigo and filial =:p_filial and
         promdtini<=:agora and promdtfim>=:agora
@@ -88,11 +95,18 @@ BEGIN
   precovenda = coalesce(precovenda,precoweb);
 
   suspend;
-END^
-
+END
+^
 SET TERM ; ^
 
-grant execute on procedure COMANDA_PRECOPRODUTO to publicweb;
+
+GRANT EXECUTE
+ ON PROCEDURE COMANDA_PRECOPRODUTO TO ROLE PUBLICWEB;
+
+GRANT EXECUTE
+ ON PROCEDURE COMANDA_PRECOPRODUTO TO  SYSDBA WITH GRANT OPTION;
+
+
 grant select on CTPRODX to procedure COMANDA_PRECOPRODUTO;
 
 commit;
