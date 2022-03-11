@@ -415,3 +415,5 @@ GRANT SELECT ON CTPROD_COMPL TO publicweb;
 grant execute on procedure COMANDA_PRECOPRODUTO to publicweb;
 grant select on CTPRODX to procedure COMANDA_PRECOPRODUTO;
 
+GRANT SELECT ON CTLOCAL TO PUBLICWEB;
+
