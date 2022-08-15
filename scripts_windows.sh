@@ -19,7 +19,7 @@ for bco in "${bancos[@]}"
   for arq_sql in C:\scripts\storesetup-0818\*.sql; do
     echo $bco "$(basename "$arq_sql")"
     #sudo 
-    ./isql.exe $bco  -u $usuario -p $senha -s 1  -o $arq_log -i $arq_sql -ch utf8
+    ./isql.exe $bco  -u $usuario -p $senha -s 1  -o $arq_log -i $arq_sql
     echo "========================================="
   done
 done

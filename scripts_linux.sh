@@ -19,6 +19,6 @@ for bco in "${bancos[@]}"
  for arq_sql in ./sql/storesetup/*.sql; do 
 
    echo $bco "$(basename "$arq_sql")"
-   sudo isql-fb $bco -u $usuario -p $senha -s 1 -ch utf8 -i $arq_sql -o $arq_log
+   sudo isql-fb $bco -u $usuario -p $senha -s 1 -i $arq_sql -o $arq_log
   done
 done
